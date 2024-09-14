@@ -13,7 +13,8 @@ int main() {
     } else if (c == '\n') {
       ++countNewLine;
     }
-    printf("count space :%d\ncount tabs: %d\ncount new line: %d\n", countSpace,
-           countTab, countNewLine);
   }
+  printf("count space :%d\ncount tabs: %d\ncount new line: %d\n", countSpace,
+         countTab, countNewLine);
+  return 0;
 }
