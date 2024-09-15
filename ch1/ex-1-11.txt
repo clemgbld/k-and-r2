@@ -1,0 +1,9 @@
+the kind of inputs with wich i would test the word counting program:
+
+and nothing should give me zero word, a count of zero and zero new line.
+
+an input with a space like "programming language", "should give me two word, a count of 3 and zero new line"
+
+an input with a new line like "programming\nlanguage", "should give me two word, a count of 3 and one new line"
+
+an input with a tab like "programming\tlanguage", "should give me two word, a count of 3 and zero new line"
