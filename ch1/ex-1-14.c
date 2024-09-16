@@ -2,11 +2,15 @@
 
 int main() {
 
-  int assci[128] = {0};
+  int assci[52] = {0};
   int c;
 
   while ((c = getchar()) != EOF) {
-    assci[c] = assci[c] + 1;
+    if (c >= 'a' && c <= 'z') {
+      assci[c - 'a'] = assci[c - 'a'] + 1;
+    } else if (c >= 'A' && c <= '2') {
+      assci[c - 'A'] = assci[c - 'A'] + 1;
+    }
   }
 
   for (int i = 0; i < 127; i++) {
