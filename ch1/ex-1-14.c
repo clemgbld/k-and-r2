@@ -2,7 +2,7 @@
 
 int main() {
 
-  int assci[127] = {0};
+  int assci[128] = {0};
   int c;
 
   while ((c = getchar()) != EOF) {
@@ -10,7 +10,7 @@ int main() {
   }
 
   for (int i = 0; i < 127; i++) {
-    printf("%d", i + 1);
+    printf("%d", i);
     int count = assci[i];
     for (int j = 0; j < count; j++) {
       printf("-");
