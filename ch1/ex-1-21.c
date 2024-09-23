@@ -25,6 +25,9 @@ int main() {
         numberOfSpaces--;
       }
       putchar(c);
+    } else if (c == '\t') {
+      putchar('\t');
+      i += TAB_SPACES - (i % TAB_SPACES);
     } else if (c == '\n') {
       i = 0;
       putchar(c);
