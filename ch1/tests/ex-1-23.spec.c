@@ -329,6 +329,70 @@ shouldNotModifyTheCommentsStateWhenEncouteringAStartWitoutHavingEncouterASlashBe
   return MUNIT_OK;
 }
 
+static MunitResult
+shouldBeAbleToPassInEscapModeWhenInQuoteMode(const MunitParameter params[],
+                                             void *fixture) {
+  char comments[4] = {'"', 0, 0, 0};
+
+  removeComments('\\', comments, &logger);
+  munit_assert_int(expectedLogs[0], ==, '\\');
+  munit_assert_int(expectedLogs[1], ==, 0);
+  munit_assert_int(comments[0], ==, '"');
+  munit_assert_int(comments[1], ==, 0);
+  munit_assert_int(comments[2], ==, 0);
+  munit_assert_int(comments[3], ==, '\\');
+
+  return MUNIT_OK;
+}
+
+static MunitResult
+shouldNotPassInEscapeModeWhenNotInQuoteMode(const MunitParameter params[],
+                                            void *fixture) {
+  char comments[4] = {0, 0, 0, 0};
+
+  removeComments('\\', comments, &logger);
+  munit_assert_int(expectedLogs[0], ==, '\\');
+  munit_assert_int(expectedLogs[1], ==, 0);
+  munit_assert_int(comments[0], ==, 0);
+  munit_assert_int(comments[1], ==, 0);
+  munit_assert_int(comments[2], ==, 0);
+  munit_assert_int(comments[3], ==, 0);
+
+  return MUNIT_OK;
+}
+
+static MunitResult
+shouldNotEndQuoteModeWhenInEscapeMode(const MunitParameter params[],
+                                      void *fixture) {
+  char comments[4] = {'"', 0, 0, '\\'};
+
+  removeComments('"', comments, &logger);
+  munit_assert_int(expectedLogs[0], ==, '"');
+  munit_assert_int(expectedLogs[1], ==, 0);
+  munit_assert_int(comments[0], ==, '"');
+  munit_assert_int(comments[1], ==, 0);
+  munit_assert_int(comments[2], ==, 0);
+  munit_assert_int(comments[3], ==, 0);
+
+  return MUNIT_OK;
+}
+
+static MunitResult
+shouldExitTheEscapeModeWhenInEscapeModeAlready(const MunitParameter params[],
+                                               void *fixture) {
+  char comments[4] = {'"', 0, 0, '\\'};
+
+  removeComments('c', comments, &logger);
+  munit_assert_int(expectedLogs[0], ==, 'c');
+  munit_assert_int(expectedLogs[1], ==, 0);
+  munit_assert_int(comments[0], ==, '"');
+  munit_assert_int(comments[1], ==, 0);
+  munit_assert_int(comments[2], ==, 0);
+  munit_assert_int(comments[3], ==, 0);
+
+  return MUNIT_OK;
+}
+
 MunitTest tests[] = {
     {
         "should pass in quote mode and print a quote", /* name */
@@ -522,6 +586,47 @@ MunitTest tests[] = {
         shouldNotModifyTheCommentsStateWhenEncouteringAStartWitoutHavingEncouterASlashBefore, /* test
                                                                                                */
         before_each,            /* setup */
+        NULL,                   /* tear_down */
+        MUNIT_TEST_OPTION_NONE, /* options */
+        NULL                    /* parameters */
+    },
+    {
+        "should be albe to pass in escape mode when in quote mode", /* name
+                                                                     */
+        shouldBeAbleToPassInEscapModeWhenInQuoteMode,               /* test
+                                                                     */
+        before_each,                                                /* setup */
+        NULL,                   /* tear_down */
+        MUNIT_TEST_OPTION_NONE, /* options */
+        NULL                    /* parameters */
+    },
+    {
+        "should not pass in escape mode when not in quote mode", /* name
+                                                                  */
+        shouldNotPassInEscapeModeWhenNotInQuoteMode,             /* test
+                                                                  */
+        before_each,                                             /* setup */
+        NULL,                                                    /* tear_down */
+        MUNIT_TEST_OPTION_NONE,                                  /* options */
+        NULL /* parameters */
+    },
+
+    {
+        "should not end quote mode when in escape mode", /* name
+                                                          */
+        shouldNotEndQuoteModeWhenInEscapeMode,           /* test
+                                                          */
+        before_each,                                     /* setup */
+        NULL,                                            /* tear_down */
+        MUNIT_TEST_OPTION_NONE,                          /* options */
+        NULL                                             /* parameters */
+    },
+    {
+        "should exit the escape mode when in escape mode already", /* name
+                                                                    */
+        shouldExitTheEscapeModeWhenInEscapeModeAlready,            /* test
+                                                                    */
+        before_each,                                               /* setup */
         NULL,                   /* tear_down */
         MUNIT_TEST_OPTION_NONE, /* options */
         NULL                    /* parameters */

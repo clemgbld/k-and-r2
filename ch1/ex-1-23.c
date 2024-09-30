@@ -24,6 +24,11 @@ int shoudExitMultiLineCommentsMode(char comments[], char c) {
 }
 
 void removeComments(char c, char comments[], Logger *logger) {
+
+  if (c == '\\' && comments[0] == '"') {
+    comments[3] = '\\';
+  }
+
   if (c == '/' && comments[0] != '"') {
     if (comments[0] == '/' && comments[1] != '*') {
       comments[1] = c;
@@ -56,13 +61,19 @@ void removeComments(char c, char comments[], Logger *logger) {
   if (c == '"' && !isInMultiLineCommentsMode(comments) &&
       !isInLineCommentMode(comments)) {
     if (comments[0] == '"') {
-      comments[0] = 0;
+      if (comments[3] != '\\') {
+        comments[0] = 0;
+      }
     } else {
       comments[0] = c;
       comments[1] = 0;
       comments[2] = 0;
     }
   }
+  if (comments[3] == '\\' && c != '\\') {
+    comments[3] = 0;
+  }
+
   if (shouldNotLogCurrentChar(c, comments)) {
     if (isInLineCommentMode(comments) && c == '\n') {
       comments[0] = 0;
@@ -81,6 +92,8 @@ void removeComments(char c, char comments[], Logger *logger) {
 
 void printChar(char c) { putchar(c); };
 
+/*
+
 int main() {
   Logger logger;
 
@@ -94,3 +107,5 @@ int main() {
 
   return 0;
 }
+
+*/
