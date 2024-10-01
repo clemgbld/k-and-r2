@@ -92,8 +92,6 @@ void removeComments(char c, char comments[], Logger *logger) {
 
 void printChar(char c) { putchar(c); };
 
-/*
-
 int main() {
   Logger logger;
 
@@ -107,5 +105,3 @@ int main() {
 
   return 0;
 }
-
-*/
