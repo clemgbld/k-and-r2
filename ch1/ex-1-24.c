@@ -1,7 +1,24 @@
+int isInLineComments(char modes[]) {
+  return modes[0] == '/' && modes[1] == '/';
+}
+
 void countSyntaxes(char c, int syntaxesCount[], char modes[]) {
 
   if (c == '/') {
-    modes[0] = '/';
+    if (modes[0] == '/' && modes[2] == '*') {
+      syntaxesCount[11] = syntaxesCount[11] + 1;
+      modes[0] = 0;
+      modes[1] = 0;
+      modes[2] = 0;
+    } else if (modes[0] == '/' && modes[1] != '*') {
+      modes[1] = '/';
+    } else {
+      modes[0] = '/';
+    }
+  }
+
+  if (modes[2] == '*' && c != '/') {
+    modes[2] = 0;
   }
 
   if (c == '*') {
@@ -20,7 +37,7 @@ void countSyntaxes(char c, int syntaxesCount[], char modes[]) {
     syntaxesCount[1] = syntaxesCount[1] + 1;
   }
 
-  if (c == '{') {
+  if (c == '{' && modes[0] != '"') {
     syntaxesCount[2] = syntaxesCount[2] + 1;
   }
 
@@ -54,5 +71,10 @@ void countSyntaxes(char c, int syntaxesCount[], char modes[]) {
       syntaxesCount[8] = syntaxesCount[8] + 1;
       modes[0] = '\'';
     }
+  }
+
+  if (c == '\n' && isInLineComments(modes)) {
+    modes[0] = 0;
+    modes[1] = 0;
   }
 };

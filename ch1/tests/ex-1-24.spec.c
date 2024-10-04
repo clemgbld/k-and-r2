@@ -214,7 +214,7 @@ static MunitResult shouldInitializeCloseComment(const MunitParameter params[],
 static MunitResult shouldCountCloseComments(const MunitParameter params[],
                                             void *fixture) {
   int initial = atoi(munit_parameters_get(params, "initial"));
-  int syntaxesCount[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, initial};
+  int syntaxesCount[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, initial, 0};
   char modes[] = {'/', '*', '*', 0};
 
   countSyntaxes('/', syntaxesCount, modes);
@@ -227,121 +227,264 @@ static MunitResult shouldCountCloseComments(const MunitParameter params[],
   return MUNIT_OK;
 }
 
-MunitTest tests[] = {{
-                         "should count open parenthesis", /* name */
-                         shouldCountOpenParenthesis,      /* test */
-                         NULL,                            /* setup */
-                         NULL,                            /* tear_down */
-                         MUNIT_TEST_OPTION_NONE,          /* options */
-                         test_params                      /* parameters */
-                     },
-                     {
-                         "should count close parenthesis", /* name */
-                         shouldCountCloseParenthesis,      /* test */
-                         NULL,                             /* setup */
-                         NULL,                             /* tear_down */
-                         MUNIT_TEST_OPTION_NONE,           /* options */
-                         test_params                       /* parameters */
-                     },
-                     {
-                         "should count open braces", /* name */
-                         shouldCountOpenBraces,      /* test */
-                         NULL,                       /* setup */
-                         NULL,                       /* tear_down */
-                         MUNIT_TEST_OPTION_NONE,     /* options */
-                         test_params                 /* parameters */
-                     },
-                     {
-                         "should count close braces", /* name */
-                         shouldCountCloseBraces,      /* test */
-                         NULL,                        /* setup */
-                         NULL,                        /* tear_down */
-                         MUNIT_TEST_OPTION_NONE,      /* options */
-                         test_params                  /* parameters */
-                     },
-                     {
-                         "should count open brackets", /* name */
-                         shouldCountOpenBracket,       /* test */
-                         NULL,                         /* setup */
-                         NULL,                         /* tear_down */
-                         MUNIT_TEST_OPTION_NONE,       /* options */
-                         test_params                   /* parameters */
-                     },
-                     {
-                         "should count close brackets", /* name */
-                         shouldCountCloseBracket,       /* test */
-                         NULL,                          /* setup */
-                         NULL,                          /* tear_down */
-                         MUNIT_TEST_OPTION_NONE,        /* options */
-                         test_params                    /* parameters */
-                     },
-                     {
-                         "should count open double quotes", /* name */
-                         shouldCountOpenDoubleQuote,        /* test */
-                         NULL,                              /* setup */
-                         NULL,                              /* tear_down */
-                         MUNIT_TEST_OPTION_NONE,            /* options */
-                         test_params                        /* parameters */
-                     },
-                     {
-                         "should count close doubles quotes", /* name */
-                         shouldCountCloseDoubleQuotes,        /* test */
-                         NULL,                                /* setup */
-                         NULL,                                /* tear_down */
-                         MUNIT_TEST_OPTION_NONE,              /* options */
-                         test_params                          /* parameters */
-                     },
-                     {
-                         "should count open single quotes", /* name */
-                         shouldCountOpenSingleQuotes,       /* test */
-                         NULL,                              /* setup */
-                         NULL,                              /* tear_down */
-                         MUNIT_TEST_OPTION_NONE,            /* options */
-                         test_params                        /* parameters */
-                     },
-                     {
-                         "should count close single quotes", /* name */
-                         shouldCountCloseSingleQuotes,       /* test */
-                         NULL,                               /* setup */
-                         NULL,                               /* tear_down */
-                         MUNIT_TEST_OPTION_NONE,             /* options */
-                         test_params                         /* parameters */
-                     },
-                     {
-                         "should initialize comment mode", /* name */
-                         shouldInitializeCommentMode,      /* test */
-                         NULL,                             /* setup */
-                         NULL,                             /* tear_down */
-                         MUNIT_TEST_OPTION_NONE,           /* options */
-                         NULL                              /* parameters */
-                     },
-                     {
-                         "should count open comments", /* name */
-                         shouldCountOpenComments,      /* test */
-                         NULL,                         /* setup */
-                         NULL,                         /* tear_down */
-                         MUNIT_TEST_OPTION_NONE,       /* options */
-                         test_params                   /* parameters */
-                     },
-                     {
-                         "should initialize close comments", /* name */
-                         shouldInitializeCloseComment,       /* test */
-                         NULL,                               /* setup */
-                         NULL,                               /* tear_down */
-                         MUNIT_TEST_OPTION_NONE,             /* options */
-                         NULL                                /* parameters */
-                     },
-                     {
-                         "should count close comments", /* name */
-                         shouldCountCloseComments,      /* test */
-                         NULL,                          /* setup */
-                         NULL,                          /* tear_down */
-                         MUNIT_TEST_OPTION_NONE,        /* options */
-                         test_params                    /* parameters */
-                     },
-                     /* Mark the end of the array with an entry where the test
-                      * function is NULL */
-                     {NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL}};
+static MunitResult shouldNotTryToStartCloseCommentsWhenThereIsNoSecondStar(
+    const MunitParameter params[], void *fixture) {
+  int syntaxesCount[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  char modes[] = {'/', '*', 0, 0};
+
+  countSyntaxes('/', syntaxesCount, modes);
+
+  assert_arrays_int_equal(syntaxesCount,
+                          (int[]){0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 12);
+  assert_arrays_char_equal(modes, (char[]){'/', '*', 0, 0}, 4);
+
+  return MUNIT_OK;
+}
+
+static MunitResult
+shouldResetTheSecondStarIfTheNextCharIsNotASlash(const MunitParameter params[],
+                                                 void *fixture) {
+  int syntaxesCount[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  char modes[] = {'/', '*', '*', 0};
+
+  countSyntaxes('c', syntaxesCount, modes);
+
+  assert_arrays_int_equal(syntaxesCount,
+                          (int[]){0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 12);
+  assert_arrays_char_equal(modes, (char[]){'/', '*', 0, 0}, 4);
+
+  return MUNIT_OK;
+}
+
+static MunitResult
+shouldBeAbleToPassInLineCommentMode(const MunitParameter params[],
+                                    void *fixture) {
+  int syntaxesCount[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  char modes[] = {'/', 0, 0, 0};
+
+  countSyntaxes('/', syntaxesCount, modes);
+
+  assert_arrays_int_equal(syntaxesCount,
+                          (int[]){0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 12);
+  assert_arrays_char_equal(modes, (char[]){'/', '/', 0, 0}, 4);
+
+  return MUNIT_OK;
+}
+
+static MunitResult
+shouldBeAbleToEndLineCommentMode(const MunitParameter params[], void *fixture) {
+  int syntaxesCount[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  char modes[] = {'/', '/', 0, 0};
+
+  countSyntaxes('\n', syntaxesCount, modes);
+
+  assert_arrays_int_equal(syntaxesCount,
+                          (int[]){0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 12);
+  assert_arrays_char_equal(modes, (char[]){0, 0, 0, 0}, 4);
+
+  return MUNIT_OK;
+}
+
+static MunitResult
+shouldOnlyEndLineCommentModeWhenInCommentLine(const MunitParameter params[],
+                                              void *fixture) {
+  int syntaxesCount[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  char modes[] = {'/', '*', 0, 0};
+
+  countSyntaxes('\n', syntaxesCount, modes);
+
+  assert_arrays_int_equal(syntaxesCount,
+                          (int[]){0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 12);
+  assert_arrays_char_equal(modes, (char[]){'/', '*', 0, 0}, 4);
+
+  return MUNIT_OK;
+}
+
+static MunitResult
+shouldNotCountCharWhenInDoubleQuote(const MunitParameter params[],
+                                    void *fixture) {
+  int syntaxesCount[] = {0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0};
+  char modes[] = {'"', 0, 0, 0};
+
+  countSyntaxes('{', syntaxesCount, modes);
+
+  assert_arrays_int_equal(syntaxesCount,
+                          (int[]){0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0}, 12);
+  assert_arrays_char_equal(modes, (char[]){'"', 0, 0, 0}, 4);
+
+  return MUNIT_OK;
+}
+
+MunitTest tests[] = {
+    {
+        "should count open parenthesis", /* name */
+        shouldCountOpenParenthesis,      /* test */
+        NULL,                            /* setup */
+        NULL,                            /* tear_down */
+        MUNIT_TEST_OPTION_NONE,          /* options */
+        test_params                      /* parameters */
+    },
+    {
+        "should count close parenthesis", /* name */
+        shouldCountCloseParenthesis,      /* test */
+        NULL,                             /* setup */
+        NULL,                             /* tear_down */
+        MUNIT_TEST_OPTION_NONE,           /* options */
+        test_params                       /* parameters */
+    },
+    {
+        "should count open braces", /* name */
+        shouldCountOpenBraces,      /* test */
+        NULL,                       /* setup */
+        NULL,                       /* tear_down */
+        MUNIT_TEST_OPTION_NONE,     /* options */
+        test_params                 /* parameters */
+    },
+    {
+        "should count close braces", /* name */
+        shouldCountCloseBraces,      /* test */
+        NULL,                        /* setup */
+        NULL,                        /* tear_down */
+        MUNIT_TEST_OPTION_NONE,      /* options */
+        test_params                  /* parameters */
+    },
+    {
+        "should count open brackets", /* name */
+        shouldCountOpenBracket,       /* test */
+        NULL,                         /* setup */
+        NULL,                         /* tear_down */
+        MUNIT_TEST_OPTION_NONE,       /* options */
+        test_params                   /* parameters */
+    },
+    {
+        "should count close brackets", /* name */
+        shouldCountCloseBracket,       /* test */
+        NULL,                          /* setup */
+        NULL,                          /* tear_down */
+        MUNIT_TEST_OPTION_NONE,        /* options */
+        test_params                    /* parameters */
+    },
+    {
+        "should count open double quotes", /* name */
+        shouldCountOpenDoubleQuote,        /* test */
+        NULL,                              /* setup */
+        NULL,                              /* tear_down */
+        MUNIT_TEST_OPTION_NONE,            /* options */
+        test_params                        /* parameters */
+    },
+    {
+        "should count close doubles quotes", /* name */
+        shouldCountCloseDoubleQuotes,        /* test */
+        NULL,                                /* setup */
+        NULL,                                /* tear_down */
+        MUNIT_TEST_OPTION_NONE,              /* options */
+        test_params                          /* parameters */
+    },
+    {
+        "should count open single quotes", /* name */
+        shouldCountOpenSingleQuotes,       /* test */
+        NULL,                              /* setup */
+        NULL,                              /* tear_down */
+        MUNIT_TEST_OPTION_NONE,            /* options */
+        test_params                        /* parameters */
+    },
+    {
+        "should count close single quotes", /* name */
+        shouldCountCloseSingleQuotes,       /* test */
+        NULL,                               /* setup */
+        NULL,                               /* tear_down */
+        MUNIT_TEST_OPTION_NONE,             /* options */
+        test_params                         /* parameters */
+    },
+    {
+        "should initialize comment mode", /* name */
+        shouldInitializeCommentMode,      /* test */
+        NULL,                             /* setup */
+        NULL,                             /* tear_down */
+        MUNIT_TEST_OPTION_NONE,           /* options */
+        NULL                              /* parameters */
+    },
+    {
+        "should count open comments", /* name */
+        shouldCountOpenComments,      /* test */
+        NULL,                         /* setup */
+        NULL,                         /* tear_down */
+        MUNIT_TEST_OPTION_NONE,       /* options */
+        test_params                   /* parameters */
+    },
+    {
+        "should initialize close comments", /* name */
+        shouldInitializeCloseComment,       /* test */
+        NULL,                               /* setup */
+        NULL,                               /* tear_down */
+        MUNIT_TEST_OPTION_NONE,             /* options */
+        NULL                                /* parameters */
+    },
+    {
+        "should count close comments", /* name */
+        shouldCountCloseComments,      /* test */
+        NULL,                          /* setup */
+        NULL,                          /* tear_down */
+        MUNIT_TEST_OPTION_NONE,        /* options */
+        test_params                    /* parameters */
+    },
+    {
+        "should not try to start to close comments when there is no "
+        "second "
+        "star",                                                  /* name */
+        shouldNotTryToStartCloseCommentsWhenThereIsNoSecondStar, /* test */
+        NULL,                                                    /* setup */
+        NULL,                                                    /* tear_down */
+        MUNIT_TEST_OPTION_NONE,                                  /* options */
+        NULL /* parameters */
+    },
+    {
+        "should reset the second star if the next character is not a "
+        "slash",                                          /* name */
+        shouldResetTheSecondStarIfTheNextCharIsNotASlash, /* test */
+        NULL,                                             /* setup */
+        NULL,                                             /* tear_down */
+        MUNIT_TEST_OPTION_NONE,                           /* options */
+        NULL                                              /* parameters */
+    },
+    {
+        "should be able to pass in line comment mode", /* name */
+        shouldBeAbleToPassInLineCommentMode,           /* test */
+        NULL,                                          /* setup */
+        NULL,                                          /* tear_down */
+        MUNIT_TEST_OPTION_NONE,                        /* options */
+        NULL                                           /* parameters */
+    },
+    {
+        "should be able to end line comment mode when encoutering a new line "
+        "char",                           /* name */
+        shouldBeAbleToEndLineCommentMode, /* test */
+        NULL,                             /* setup */
+        NULL,                             /* tear_down */
+        MUNIT_TEST_OPTION_NONE,           /* options */
+        NULL                              /* parameters */
+    },
+    {
+        "should only end line comment mode when in comment line mode", /* name
+                                                                        */
+        shouldOnlyEndLineCommentModeWhenInCommentLine, /* test */
+        NULL,                                          /* setup */
+        NULL,                                          /* tear_down */
+        MUNIT_TEST_OPTION_NONE,                        /* options */
+        NULL                                           /* parameters */
+    },
+    {
+        "should not count char when in double quote mode", /* name
+                                                            */
+        shouldNotCountCharWhenInDoubleQuote,               /* test */
+        NULL,                                              /* setup */
+        NULL,                                              /* tear_down */
+        MUNIT_TEST_OPTION_NONE,                            /* options */
+        NULL                                               /* parameters */
+    },
+    /* Mark the end of the array with an entry where the test
+     * function is NULL */
+    {NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL}};
 
 static const MunitSuite suite = {
     "/count-syntaxes ",     /* name */
