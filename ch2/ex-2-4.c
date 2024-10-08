@@ -1,7 +1,6 @@
-#include <string.h>
 
 int includes(int c, char str[]) {
-  for (int i = 0; i < strlen(str); i++) {
+  for (int i = 0; str[i] != '\0'; i++) {
     if (c == str[i])
       return 1;
   }
