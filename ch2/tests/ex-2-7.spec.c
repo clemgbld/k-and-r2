@@ -1,17 +1,16 @@
-#include "../ex-2-6.c"
+
+#include "../ex-2-7.c"
 #include "../../munit/munit.h"
 
-static MunitResult setBitsTest(const MunitParameter params[], void *fixture) {
-  munit_assert_int(setbits(157, 4, 3, 13), ==, 149);
-
-  munit_assert_int(setbits(133, 3, 3, 7), ==, 143);
+static MunitResult invertbitsTest(const MunitParameter params[],
+                                  void *fixture) {
 
   return MUNIT_OK;
 }
 
 MunitTest tests[] = {{
-                         "/setbits-tests ",      /* name */
-                         setBitsTest,            /* test */
+                         "/invertbits-tests ",   /* name */
+                         invertbitsTest,         /* test */
                          NULL,                   /* setup */
                          NULL,                   /* tear_down */
                          MUNIT_TEST_OPTION_NONE, /* options */
@@ -22,7 +21,7 @@ MunitTest tests[] = {{
                      {NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL}};
 
 static const MunitSuite suite = {
-    "/setbits-tests",       /* name */
+    "/invertbits-tests",    /* name */
     tests,                  /* tests */
     NULL,                   /* suites */
     1,                      /* iterations */
