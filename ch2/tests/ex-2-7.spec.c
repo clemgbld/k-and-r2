@@ -4,6 +4,8 @@
 
 static MunitResult invertbitsTest(const MunitParameter params[],
                                   void *fixture) {
+  munit_assert_int(invertbits(157, 6, 3), ==, 237);
+  munit_assert_int(invertbits(149, 5, 2), ==, 165);
 
   return MUNIT_OK;
 }
