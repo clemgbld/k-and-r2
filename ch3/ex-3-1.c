@@ -1,5 +1,6 @@
 int binsearch(int x, int v[], int n) {
   int low, high, mid;
+  mid = 0;
   low = 0;
   high = n - 1;
   while (low <= high) {
