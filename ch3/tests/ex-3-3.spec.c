@@ -83,6 +83,55 @@ should_have_the_correct_sperator_to_expand(const MunitParameter params[],
   return MUNIT_OK;
 }
 
+static MunitResult
+should_expand_odd_basic_notations(const MunitParameter params[],
+                                  void *fixture) {
+  char s1[] = "a-b-d-f";
+  char s2[100];
+  expand(s1, s2);
+  munit_assert_string_equal(s2, "abcdef");
+  return MUNIT_OK;
+}
+
+static MunitResult should_take_ending_literally(const MunitParameter params[],
+                                                void *fixture) {
+  char s1[] = "a-b-d-f--_";
+  char s2[100];
+  expand(s1, s2);
+  munit_assert_string_equal(s2, "abcdef--_");
+  return MUNIT_OK;
+}
+
+static MunitResult should_handle_wrong_range(const MunitParameter params[],
+                                             void *fixture) {
+  char s1[] = "z-a-b-c--_";
+  char s2[100];
+  expand(s1, s2);
+  munit_assert_string_equal(s2, "z-abc--_");
+
+  char s3[] = "a-a";
+  char s4[100];
+  expand(s3, s4);
+  munit_assert_string_equal(s4, "a-a");
+
+  char s5[] = "A-a";
+  char s6[100];
+  expand(s5, s6);
+  munit_assert_string_equal(s6, "A-a");
+
+  char s7[] = "C-z";
+  char s8[100];
+  expand(s7, s8);
+  munit_assert_string_equal(s8, "C-z");
+
+  char s9[] = "0-z";
+  char s10[100];
+  expand(s9, s10);
+  munit_assert_string_equal(s9, "0-z");
+
+  return MUNIT_OK;
+}
+
 MunitTest tests[] = {
     {
         "should expand empty string", /* name */
@@ -131,6 +180,22 @@ MunitTest tests[] = {
         NULL,                                          /* tear_down */
         MUNIT_TEST_OPTION_NONE,                        /* options */
         NULL                                           /* parameters */
+    },
+    {
+        "should be able to expand odd anotations", /* name */
+        should_expand_odd_basic_notations,         /* test */
+        NULL,                                      /* setup */
+        NULL,                                      /* tear_down */
+        MUNIT_TEST_OPTION_NONE,                    /* options */
+        NULL                                       /* parameters */
+    },
+    {
+        "should handle wrong range", /* name */
+        should_handle_wrong_range,   /* test */
+        NULL,                        /* setup */
+        NULL,                        /* tear_down */
+        MUNIT_TEST_OPTION_NONE,      /* options */
+        NULL                         /* parameters */
     },
     /* Mark the end of the array with an entry where the test
      * function is NULL */

@@ -3,6 +3,10 @@ int isInRange(char c) {
   return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9';
 }
 
+int isWrongRange(char start, char end) {
+  return start >= end || start <= 'Z' && end > 'Z' || start <= '9' && end > '9';
+}
+
 void expand(char s1[], char s2[]) {
   int i = 0;
   int j = 0;
@@ -44,11 +48,18 @@ void expand(char s1[], char s2[]) {
         s2[j] = s1[i];
         j++;
       } else if (start != 0 && separator == '-') {
-        for (char k = start + 1; k <= s1[i]; k++, j++)
-          s2[j] = k;
-        start = 0;
-        separator = 0;
+        if (isWrongRange(start, s1[i])) {
+          s2[j] = separator;
+          j++;
+          s2[j] = s1[i];
+          j++;
+        } else {
+          for (char k = start + 1; k <= s1[i]; k++, j++)
+            s2[j] = k;
+        };
 
+        start = s1[i];
+        separator = 0;
       } else if (start != 0 && separator == 0) {
         start = s1[i];
         s2[j] = s1[i];
