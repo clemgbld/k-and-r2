@@ -63,49 +63,78 @@ should_handle_wrong_range_separator(const MunitParameter params[],
   return MUNIT_OK;
 }
 
-MunitTest tests[] = {{
-                         "should expand empty string", /* name */
-                         should_expand_empty_string,   /* test */
-                         NULL,                         /* setup */
-                         NULL,                         /* tear_down */
-                         MUNIT_TEST_OPTION_NONE,       /* options */
-                         NULL                          /* parameters */
-                     },
-                     {
-                         "should expand basic notations", /* name */
-                         should_expand_basic_notations,   /* test */
-                         NULL,                            /* setup */
-                         NULL,                            /* tear_down */
-                         MUNIT_TEST_OPTION_NONE,          /* options */
-                         NULL                             /* parameters */
-                     },
-                     {
-                         "should expand multiple basic notations", /* name */
-                         should_expand_multiple_basic_notations,   /* test */
-                         NULL,                                     /* setup */
-                         NULL,                   /* tear_down */
-                         MUNIT_TEST_OPTION_NONE, /* options */
-                         NULL                    /* parameters */
-                     },
-                     {
-                         "should take leading literally", /* name */
-                         should_take_leading_literaly,    /* test */
-                         NULL,                            /* setup */
-                         NULL,                            /* tear_down */
-                         MUNIT_TEST_OPTION_NONE,          /* options */
-                         NULL                             /* parameters */
-                     },
-                     {
-                         "should handle wrong range separator", /* name */
-                         should_handle_wrong_range_separator,   /* test */
-                         NULL,                                  /* setup */
-                         NULL,                                  /* tear_down */
-                         MUNIT_TEST_OPTION_NONE,                /* options */
-                         NULL                                   /* parameters */
-                     },
-                     /* Mark the end of the array with an entry where the test
-                      * function is NULL */
-                     {NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL}};
+static MunitResult
+should_have_the_correct_sperator_to_expand(const MunitParameter params[],
+                                           void *fixture) {
+  char s1[] = "120-3";
+  char s2[100];
+  expand(s1, s2);
+  munit_assert_string_equal(s2, "120123");
+
+  char s3[] = "1--_-2";
+  char s4[100];
+  expand(s3, s4);
+  munit_assert_string_equal(s4, "1--_-2");
+
+  char s5[] = "10-2";
+  char s6[100];
+  expand(s5, s6);
+  munit_assert_string_equal(s6, "1012");
+  return MUNIT_OK;
+}
+
+MunitTest tests[] = {
+    {
+        "should expand empty string", /* name */
+        should_expand_empty_string,   /* test */
+        NULL,                         /* setup */
+        NULL,                         /* tear_down */
+        MUNIT_TEST_OPTION_NONE,       /* options */
+        NULL                          /* parameters */
+    },
+    {
+        "should expand basic notations", /* name */
+        should_expand_basic_notations,   /* test */
+        NULL,                            /* setup */
+        NULL,                            /* tear_down */
+        MUNIT_TEST_OPTION_NONE,          /* options */
+        NULL                             /* parameters */
+    },
+    {
+        "should expand multiple basic notations", /* name */
+        should_expand_multiple_basic_notations,   /* test */
+        NULL,                                     /* setup */
+        NULL,                                     /* tear_down */
+        MUNIT_TEST_OPTION_NONE,                   /* options */
+        NULL                                      /* parameters */
+    },
+    {
+        "should take leading literally", /* name */
+        should_take_leading_literaly,    /* test */
+        NULL,                            /* setup */
+        NULL,                            /* tear_down */
+        MUNIT_TEST_OPTION_NONE,          /* options */
+        NULL                             /* parameters */
+    },
+    {
+        "should handle wrong range separator", /* name */
+        should_handle_wrong_range_separator,   /* test */
+        NULL,                                  /* setup */
+        NULL,                                  /* tear_down */
+        MUNIT_TEST_OPTION_NONE,                /* options */
+        NULL                                   /* parameters */
+    },
+    {
+        "should have the correct separator to expand", /* name */
+        should_have_the_correct_sperator_to_expand,    /* test */
+        NULL,                                          /* setup */
+        NULL,                                          /* tear_down */
+        MUNIT_TEST_OPTION_NONE,                        /* options */
+        NULL                                           /* parameters */
+    },
+    /* Mark the end of the array with an entry where the test
+     * function is NULL */
+    {NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL}};
 
 static const MunitSuite suite = {
     "/expand-suite ",       /* name */
