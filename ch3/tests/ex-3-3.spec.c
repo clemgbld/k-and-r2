@@ -127,7 +127,7 @@ static MunitResult should_handle_wrong_range(const MunitParameter params[],
   char s9[] = "0-z";
   char s10[100];
   expand(s9, s10);
-  munit_assert_string_equal(s9, "0-z");
+  munit_assert_string_equal(s10, "0-z");
 
   return MUNIT_OK;
 }
