@@ -12,7 +12,8 @@ void reverse(char s[]) {
 
 // the bug was happening because of this line n = -n because 2147483648 made
 // postive is bigger than than the signed int max range which is 2147483647
-// to fix it we can use an unsigned int who have the max range of 4294967295
+// to fix it we can use an unsigned int who have the max range of 4294967295 or
+// treat the min range as a special edege case and make the conversion manually
 
 void itoa(int n, char s[]) {
   int i, sign;
