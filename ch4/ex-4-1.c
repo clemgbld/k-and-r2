@@ -34,5 +34,6 @@ int strrindex(char s[], char t[]) {
       return i;
     }
   }
+  free(pattern);
   return -1;
 }
