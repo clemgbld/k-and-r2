@@ -3,7 +3,8 @@
 #include <string.h>
 
 double atofcustom(char s[]) {
-  double val, power, exp;
+  double val, power;
+  double exp = 0;
   int i, sign;
   for (i = 0; isspace(s[i]); i++)
     ;
@@ -36,10 +37,10 @@ double atofcustom(char s[]) {
 
   if (isdigit(s[i])) {
     char expStr[(strlen(s) + 1) - i];
-    for (int j = 0; isdigit(s[i]); i++, j++) {
-      expStr[j] = s[i];
+    for (; isdigit(s[i]); i++) {
+      exp = 10 * exp + (s[i] - '0');
     }
-    result = result * pow(10, sign * atofcustom(expStr));
+    result = result * pow(10, sign * exp);
   }
 
   return result;
