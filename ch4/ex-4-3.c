@@ -49,7 +49,10 @@ int main() {
       break;
     case '%':
       op2 = pop();
-      push(fmod(pop(), op2));
+      if (op2 != 0.0)
+        push(fmod(pop(), op2));
+      else
+        printf("error: zero divisor\n");
       break;
     case '\n':
       printf("\t%.8g\n", pop());
