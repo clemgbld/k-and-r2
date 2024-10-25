@@ -4,7 +4,9 @@
 #include <stdlib.h>
 #define MAXOP 100
 #define NUMBER '0'
-#define SIN '1'
+#define SINUS '1'
+const char EXP = '2';
+const char POW = '3';
 
 int getop(char[]);
 void push(double);
@@ -55,8 +57,15 @@ int main() {
       else
         printf("error: zero divisor\n");
       break;
-    case SIN:
+    case SINUS:
       push(sin(pop()));
+      break;
+    case EXP:
+      push(exp(pop()));
+      break;
+    case POW:
+      op2 = pop();
+      push(pow(pop(), op2));
       break;
     case '\n':
       printf("\t%.8g\n", pop());
@@ -111,9 +120,8 @@ int getop(char s[]) {
       if (c == 'i') {
         s[++i] = c = getch();
         if (c == 'n') {
-          s[++i] = c = getch();
           s[i] = '\0';
-          return SIN;
+          return SINUS;
         } else {
           ungetch(s[1]);
           ungetch(c);
@@ -125,9 +133,42 @@ int getop(char s[]) {
         ungetch(c);
         return s[0];
       }
-    } else {
-      s[1] = '\0';
-      return c;
+    } else if (c == 'e') {
+      s[++i] = c = getch();
+      if (c == 'x') {
+        s[++i] = c = getch();
+        if (c == 'p') {
+          s[i] = '\0';
+          return EXP;
+        } else {
+          ungetch(s[1]);
+          ungetch(c);
+          s[1] = '\0';
+          return s[0];
+        }
+      } else {
+        s[1] = '\0';
+        ungetch(c);
+        return s[0];
+      }
+    } else if (c == 'p') {
+      s[++i] = c = getch();
+      if (c == 'o') {
+        s[++i] = c = getch();
+        if (c == 'w') {
+          s[i] = '\0';
+          return POW;
+        } else {
+          ungetch(s[1]);
+          ungetch(c);
+          s[1] = '\0';
+          return s[0];
+        }
+      } else {
+        s[1] = '\0';
+        ungetch(c);
+        return s[0];
+      }
     }
   }
 
