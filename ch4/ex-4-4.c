@@ -42,3 +42,11 @@ void swapTopTwoElements(void) {
 }
 
 void clear(void) { sp = 0; }
+
+/*
+ in the reverse polish calculator we just have to add commands for printing
+ duplicating and swap for exemple s for swap '
+ s'case:
+ swapTopTwoElements();
+  break;
+*/
