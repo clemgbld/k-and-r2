@@ -123,8 +123,8 @@ int getop(char s[]) {
           s[i] = '\0';
           return SINUS;
         } else {
-          ungetch(s[1]);
           ungetch(c);
+          ungetch(s[1]);
           s[1] = '\0';
           return s[0];
         }
@@ -141,8 +141,8 @@ int getop(char s[]) {
           s[i] = '\0';
           return EXP;
         } else {
-          ungetch(s[1]);
           ungetch(c);
+          ungetch(s[i - 1]);
           s[1] = '\0';
           return s[0];
         }
@@ -159,8 +159,8 @@ int getop(char s[]) {
           s[i] = '\0';
           return POW;
         } else {
-          ungetch(s[1]);
           ungetch(c);
+          ungetch(s[1]);
           s[1] = '\0';
           return s[0];
         }
