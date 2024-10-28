@@ -9,23 +9,27 @@ void reverse(char s[]) {
   }
 }
 
-/*
+void itoaRecur(unsigned int n, char s[], int i, int sign) {
+  if (n / 10 > 0) {
+    int newN = n / 10;
+    s[i] = newN % 10 + '0';
+    return itoaRecur(newN, s, i + 1, sign);
+  }
+  if (sign < 0) {
+    s[i++] = '-';
+  }
+  s[i] = '\0';
+  reverse(s);
+}
+
 void itoa(int n, char s[]) {
-  int i, sign;
   unsigned int number;
+  int sign;
   if ((sign = n) < 0) {
     number = -n;
   } else {
     number = n;
   }
-  i = 0;
-  do {
-    s[i++] = number % 10 + '0';
-  } while ((number /= 10) > 0);
-  if (sign < 0)
-    s[i++] = '-';
-  s[i] = '\0';
-  reverse(s);
+  s[0] = number % 10 + '0';
+  itoaRecur(number, s, 1, sign);
 }
-
-*/
