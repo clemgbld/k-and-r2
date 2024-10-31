@@ -5,7 +5,7 @@
 int getch(void);
 void ungetch(int);
 /* getint: get next integer from input into *pn */
-int getint(double *pn) {
+int getfloat(double *pn) {
   int c, sign;
   while (isspace(c = getch())) /* skip white space */
     ;
@@ -76,13 +76,6 @@ int getint(double *pn) {
   if (c != EOF)
     ungetch(c);
   return c;
-}
-
-int main() {
-  double pn = 5;
-  getint(&pn);
-  printf("%f\n", pn);
-  return 0;
 }
 
 #define BUFSIZE 100
