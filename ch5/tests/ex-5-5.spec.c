@@ -40,6 +40,16 @@ static MunitResult strncpy_test(const MunitParameter params[], void *fixture) {
   char s2[100] = "b";
   strncpy_custom(s1, s2, 1);
   munit_assert_string_equal(s1, "b");
+
+  char s3[100];
+  char s4[100] = "ba";
+  strncpy_custom(s3, s4, 2);
+  munit_assert_string_equal(s3, "ba");
+
+  char s5[100];
+  char s6[100] = "ba";
+  strncpy_custom(s5, s6, 1);
+  munit_assert_string_equal(s5, "b");
   return MUNIT_OK;
 }
 
