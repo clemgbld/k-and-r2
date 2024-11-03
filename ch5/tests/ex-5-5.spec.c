@@ -53,6 +53,16 @@ static MunitResult strncpy_test(const MunitParameter params[], void *fixture) {
   return MUNIT_OK;
 }
 
+static MunitResult strncmp_test(const MunitParameter params[], void *fixture) {
+
+  munit_assert_int(strncmp_custom("", "", 0), ==, 0);
+  munit_assert_int(strncmp_custom("b", "a", 1), ==, 'b' - 'a');
+  munit_assert_int(strncmp_custom("baller", "ballir", 6), ==, 'e' - 'i');
+  munit_assert_int(strncmp_custom("baller", "ballir", 4), ==, 0);
+
+  return MUNIT_OK;
+}
+
 MunitTest tests[] = {{
                          "/strncat-test",        /* name */
                          strncat_test,           /* test */
@@ -64,6 +74,14 @@ MunitTest tests[] = {{
                      {
                          "/strncpy-test",        /* name */
                          strncpy_test,           /* test */
+                         NULL,                   /* setup */
+                         NULL,                   /* tear_down */
+                         MUNIT_TEST_OPTION_NONE, /* options */
+                         NULL                    /* parameters */
+                     },
+                     {
+                         "/strncmp-test",        /* name */
+                         strncmp_test,           /* test */
                          NULL,                   /* setup */
                          NULL,                   /* tear_down */
                          MUNIT_TEST_OPTION_NONE, /* options */
