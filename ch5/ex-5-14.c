@@ -4,8 +4,11 @@
 #include <string.h>
 
 #define MAXLINES 5000    /* max #lines to be sorted */
+#define MAXLEN 1000      /* max #lines to be sorted */
 char *lineptr[MAXLINES]; /* pointers to text lines */
-int readlines(char *lineptr[], int nlines);
+char lines[10000];
+
+int readlines(char *lineptr[], int nlines, char *lines);
 void writelines(char *lineptr[], int nlines);
 void quick_sort(void *lineptr[], int left, int right,
                 int (*comp)(void *, void *));
@@ -20,25 +23,28 @@ int main(int argc, char *argv[]) {
   bool reverse = false;
 
   while (--argc > 0 && (*++argv)[0] == '-') {
-    switch (*argv[1]) {
-    case 'n': {
-      numeric = true;
-      break;
-    }
-    case 'r': {
-      reverse = true;
-      break;
-    }
-    default: {
-      printf("Invalid argument: %s\n", *argv);
-      break;
-    }
+    int c;
+    while (c = *++argv[0]) {
+      switch (c) {
+      case 'n': {
+        numeric = true;
+        break;
+      }
+      case 'r': {
+        reverse = true;
+        break;
+      }
+      default: {
+        printf("Invalid argument: %s\n", *argv);
+        break;
+      }
+      }
     }
   }
 
   if (argc > 1 && strcmp(argv[1], "-n") == 0)
     numeric = 1;
-  if ((nlines = readlines(lineptr, MAXLINES)) >= 0) {
+  if ((nlines = readlines(lineptr, MAXLINES, lines)) >= 0) {
     quick_sort((void **)lineptr, 0, nlines - 1,
                (int (*)(void *, void *))(numeric   ? reverse ? rnumcmp : numcmp
                                          : reverse ? rstrcmp
@@ -49,6 +55,40 @@ int main(int argc, char *argv[]) {
     printf("input too big to sort\n");
     return 1;
   }
+}
+
+int getLine(char s[], int lim) {
+  int c, i;
+  for (i = 0; i < lim - 1 && (c = getchar()) != EOF && c != '\n'; ++i)
+    s[i] = c;
+  if (c == '\n' && i != 0) {
+    s[i] = c;
+    ++i;
+  }
+  s[i] = '\0';
+  return i;
+}
+
+int readlines(char *lineptr[], int maxlines, char *lines) {
+  int len, nlines;
+  nlines = 0;
+  while ((len = getLine(lines, MAXLEN)) > 0) {
+    if (nlines >= maxlines)
+      return -1;
+    else {
+      *(lines + (len - 1)) = '\0';
+      lineptr[nlines++] = lines;
+      lines += len;
+    }
+  }
+
+  return nlines;
+}
+
+void writelines(char *lineptr[], int nlines) {
+  int i;
+  for (i = 0; i < nlines; i++)
+    printf("%s\n", lineptr[i]);
 }
 
 void quick_sort(void *v[], int left, int right, int (*comp)(void *, void *)) {
@@ -79,26 +119,9 @@ int numcmp(char *s1, char *s2) {
     return 0;
 }
 
-int rnumcmp(char *s1, char *s2) {
-  double v1, v2;
-  v1 = atof(s1);
-  v2 = atof(s2);
-  if (v1 < v2)
-    return 1;
-  else if (v1 > v2)
-    return -1;
-  else
-    return 0;
-}
+int rnumcmp(char *s1, char *s2) { return numcmp(s2, s1); }
 
-int rstrcmp(char *s1, char *s2) {
-  int cmp = strcmp(s1, s2);
-  if (cmp == 1)
-    return -1;
-  if (cmp == -1)
-    return 1;
-  return 0;
-}
+int rstrcmp(char *s1, char *s2) { return strcmp(s2, s1); }
 
 void swap(void *v[], int i, int j) {
   void *temp;
