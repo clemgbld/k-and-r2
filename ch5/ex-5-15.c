@@ -1,3 +1,4 @@
+#include "./utils/lowercase.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,11 +17,14 @@ void quick_sort(void *lineptr[], int left, int right,
 int numcmp(char *, char *);
 int rnumcmp(char *, char *);
 int rstrcmp(char *, char *);
+int foldstrcmp(char *, char *);
+int foldresversestrcmp(char *, char *);
 /* sort input lines */
 int main(int argc, char *argv[]) {
   int nlines;           /* number of input lines read */
   bool numeric = false; /* 1 if numeric sort */
   bool reverse = false;
+  bool fold = false;
 
   while (--argc > 0 && (*++argv)[0] == '-') {
     int c;
@@ -34,6 +38,10 @@ int main(int argc, char *argv[]) {
         reverse = true;
         break;
       }
+      case 'f': {
+        fold = true;
+        break;
+      }
       default: {
         printf("Invalid argument: %s\n", *argv);
         break;
@@ -41,10 +49,13 @@ int main(int argc, char *argv[]) {
       }
     }
   }
+
   if ((nlines = readlines(lineptr, MAXLINES, lines)) >= 0) {
     quick_sort((void **)lineptr, 0, nlines - 1,
                (int (*)(void *, void *))(numeric   ? reverse ? rnumcmp : numcmp
-                                         : reverse ? rstrcmp
+                                         : reverse ? fold ? foldresversestrcmp
+                                                          : rstrcmp
+                                         : fold    ? foldstrcmp
                                                    : strcmp));
     writelines(lineptr, nlines);
     return 0;
@@ -119,6 +130,24 @@ int numcmp(char *s1, char *s2) {
 int rnumcmp(char *s1, char *s2) { return numcmp(s2, s1); }
 
 int rstrcmp(char *s1, char *s2) { return strcmp(s2, s1); }
+
+int foldstrcmp(char *s1, char *s2) {
+  char *lowereds1 = lowercase(s1);
+  char *lowereds2 = lowercase(s2);
+  int result = strcmp(lowereds1, lowereds2);
+  free(lowereds1);
+  free(lowereds2);
+  return result;
+}
+
+int foldresversestrcmp(char *s1, char *s2) {
+  char *lowereds1 = lowercase(s1);
+  char *lowereds2 = lowercase(s2);
+  int result = strcmp(lowereds2, lowereds1);
+  free(lowereds1);
+  free(lowereds2);
+  return result;
+}
 
 void swap(void *v[], int i, int j) {
   void *temp;
