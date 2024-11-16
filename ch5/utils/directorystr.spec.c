@@ -1,4 +1,4 @@
-#include "./directorystr.c"
+#include "directorystr.h"
 #include "../../munit/munit.h"
 #include <stdlib.h>
 
