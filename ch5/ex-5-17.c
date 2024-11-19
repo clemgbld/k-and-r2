@@ -1,19 +1,33 @@
 #include "./utils/directorystr.h"
+#include "./utils/extractfields.h"
 #include "./utils/lowercase.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define MAXLINES 5000    /* max #lines to be sorted */
-#define MAXLEN 1000      /* max #lines to be sorted */
-char *lineptr[MAXLINES]; /* pointers to text lines */
+struct FieldSort {
+  int start;
+  int end;
+  bool numeric;
+  bool reverse;
+  bool fold;
+  bool directory;
+};
+
+#define MAXLINES 5000
+#define MAXLEN 1000
+#define MAXFIELDS 1000
+char *lineptr[MAXLINES];
 char lines[10000];
+struct FieldSort fields[MAXFIELDS];
 
 int readlines(char *lineptr[], int nlines, char *lines);
 void writelines(char *lineptr[], int nlines);
 void quick_sort(void *lineptr[], int left, int right,
                 int (*comp)(void *, void *));
+void quick_sort_field(void *lineptr[], int left, int right,
+                      int (*comp)(void *, void *), int start, int end);
 
 int numcmp(char *, char *);
 int rnumcmp(char *, char *);
@@ -24,15 +38,6 @@ int directoryycmp(char *, char *);
 int reversedirectorycmp(char *, char *);
 int folddirectorycmp(char *, char *);
 int foldreversedirectorycmp(char *, char *);
-
-struct FieldSort {
-  int start;
-  int end;
-  bool numeric;
-  bool reverse;
-  bool fold;
-  bool directory;
-};
 
 int (*choose_sort_strategy(bool numeric, bool reverse, bool fold,
                            bool directory))(void *, void *) {
@@ -64,6 +69,7 @@ int main(int argc, char *argv[]) {
   bool reverse = false;
   bool fold = false;
   bool directory = false;
+  int fieldsCount = 0;
 
   while (--argc > 0 && (*++argv)[0] == '-') {
     int c;
@@ -94,11 +100,24 @@ int main(int argc, char *argv[]) {
   }
 
   if ((nlines = readlines(lineptr, MAXLINES, lines)) >= 0) {
-    int (*cmp)(void *, void *) =
-        choose_sort_strategy(numeric, reverse, fold, directory);
-    quick_sort((void **)lineptr, 0, nlines - 1, cmp);
-    writelines(lineptr, nlines);
-    return 0;
+    if (fieldsCount == 0) {
+      int (*cmp)(void *, void *) =
+          choose_sort_strategy(numeric, reverse, fold, directory);
+      quick_sort((void **)lineptr, 0, nlines - 1, cmp);
+      writelines(lineptr, nlines);
+      return 0;
+    } else {
+      for (int i = 0; i < fieldsCount; i++) {
+        struct FieldSort field = fields[i];
+        int (*cmp)(void *, void *) = choose_sort_strategy(
+            field.numeric, field.reverse, field.fold, field.directory);
+        quick_sort_field((void **)lineptr, 0, nlines - 1, cmp, field.start,
+                         field.end);
+      }
+      writelines(lineptr, nlines);
+      return 0;
+    }
+
   } else {
     printf("input too big to sort\n");
     return 1;
@@ -149,6 +168,29 @@ void quick_sort(void *v[], int left, int right, int (*comp)(void *, void *)) {
   for (i = left + 1; i <= right; i++)
     if ((*comp)(v[i], v[left]) < 0)
       swap(v, ++last, i);
+  swap(v, left, last);
+  quick_sort(v, left, last - 1, comp);
+  quick_sort(v, last + 1, right, comp);
+}
+
+void quick_sort_field(void *v[], int left, int right,
+                      int (*comp)(void *, void *), int start, int end) {
+  int i, last;
+  void swap(void *v[], int, int);
+  if (left >= right) /* do nothing if array contains */
+    return;          /* fewer than two elements */
+  swap(v, left, (left + right) / 2);
+  last = left;
+  for (i = left + 1; i <= right; i++) {
+    char *extractField1 = extractfields(v[i], start, end);
+    char *extractField2 = extractfields(v[left], start, end);
+    if ((*comp)(extractField1, extractField2) < 0) {
+      swap(v, ++last, i);
+    }
+    free(extractField1);
+    free(extractField2);
+  }
+
   swap(v, left, last);
   quick_sort(v, left, last - 1, comp);
   quick_sort(v, last + 1, right, comp);
