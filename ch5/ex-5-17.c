@@ -25,8 +25,17 @@ int reversedirectorycmp(char *, char *);
 int folddirectorycmp(char *, char *);
 int foldreversedirectorycmp(char *, char *);
 
-int (*choose_sort_strategy(int numeric, int reverse, int fold,
-                           int directory))(void *, void *) {
+struct FieldSort {
+  int start;
+  int end;
+  bool numeric;
+  bool reverse;
+  bool fold;
+  bool directory;
+};
+
+int (*choose_sort_strategy(bool numeric, bool reverse, bool fold,
+                           bool directory))(void *, void *) {
   if (numeric) {
     return reverse ? (int (*)(void *, void *))rnumcmp
                    : (int (*)(void *, void *))numcmp;
