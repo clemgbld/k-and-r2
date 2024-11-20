@@ -1,6 +1,7 @@
 #include "./utils/directorystr.h"
 #include "./utils/extractfields.h"
 #include "./utils/lowercase.h"
+#include <ctype.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -89,6 +90,78 @@ int main(int argc, char *argv[]) {
       }
       case 'd': {
         directory = true;
+        break;
+      }
+      case 'k': {
+        struct FieldSort field = {.start = 0,
+                                  .end = 0,
+                                  .fold = false,
+                                  .reverse = false,
+                                  .directory = false,
+                                  .numeric = false};
+        if ((*++argv)[0] == '-') {
+          argc--;
+          int c;
+          while (c = *++argv[0]) {
+            switch (c) {
+            case 'n': {
+              field.numeric = true;
+              break;
+            }
+            case 'r': {
+              field.reverse = true;
+              reverse = true;
+              break;
+            }
+            case 'f': {
+              field.fold = true;
+              fold = true;
+              break;
+            }
+            case 'd': {
+              field.directory = true;
+              directory = true;
+              break;
+            }
+            default: {
+              printf("Invalid argument: %s\n", *argv);
+              break;
+            }
+            }
+          }
+        }
+        argv++;
+        char *startAndEnd = *argv;
+        const char delimiter[] = ",";
+        int start, end;
+
+        if (startAndEnd != NULL && isdigit(startAndEnd[0])) {
+          argc--;
+          char *token = strtok(startAndEnd, delimiter);
+          if (token != NULL && isdigit(token[0])) {
+            start = atoi(token);
+            field.start = start;
+            token = strtok(startAndEnd, delimiter);
+            if (token != NULL && isdigit(token[0])) {
+              end = atoi(token);
+              field.end = end;
+            } else {
+              printf("No end got %s\n", token);
+            }
+          } else {
+            printf("No start got %s\n", token);
+          }
+
+        } else {
+          printf("No start and end\n");
+        }
+
+        if (start > end) {
+          printf("start is > end \n");
+        }
+
+        fields[fieldsCount] = field;
+        fieldsCount++;
         break;
       }
       default: {
