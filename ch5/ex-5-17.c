@@ -28,7 +28,7 @@ void writelines(char *lineptr[], int nlines);
 void quick_sort(void *lineptr[], int left, int right,
                 int (*comp)(void *, void *));
 void quick_sort_field(void *lineptr[], int left, int right,
-                      int (*comp)(void *, void *), int start, int end);
+                      struct FieldSort fields[], int fieldsCount);
 
 int numcmp(char *, char *);
 int rnumcmp(char *, char *);
@@ -180,13 +180,7 @@ int main(int argc, char *argv[]) {
       writelines(lineptr, nlines);
       return 0;
     } else {
-      for (int i = 0; i < fieldsCount; i++) {
-        struct FieldSort field = fields[i];
-        int (*cmp)(void *, void *) = choose_sort_strategy(
-            field.numeric, field.reverse, field.fold, field.directory);
-        quick_sort_field((void **)lineptr, 0, nlines - 1, cmp, field.start,
-                         field.end);
-      }
+      quick_sort_field((void **)lineptr, 0, nlines - 1, fields, fieldsCount);
       writelines(lineptr, nlines);
       return 0;
     }
@@ -246,8 +240,8 @@ void quick_sort(void *v[], int left, int right, int (*comp)(void *, void *)) {
   quick_sort(v, last + 1, right, comp);
 }
 
-void quick_sort_field(void *v[], int left, int right,
-                      int (*comp)(void *, void *), int start, int end) {
+void quick_sort_field(void *v[], int left, int right, struct FieldSort fields[],
+                      int fieldsCount) {
   int i, last;
   void swap(void *v[], int, int);
   if (left >= right) /* do nothing if array contains */
@@ -255,18 +249,25 @@ void quick_sort_field(void *v[], int left, int right,
   swap(v, left, (left + right) / 2);
   last = left;
   for (i = left + 1; i <= right; i++) {
-    char *extractField1 = extractfields(v[i], start, end);
-    char *extractField2 = extractfields(v[left], start, end);
-    if ((*comp)(extractField1, extractField2) < 0) {
-      swap(v, ++last, i);
+    int resultComp = 0;
+    for (int count = 0; resultComp == 0 && count < fieldsCount; count++) {
+      struct FieldSort field = fields[count];
+      int (*comp)(void *, void *) = choose_sort_strategy(
+          field.numeric, field.reverse, field.fold, field.directory);
+      char *extractField1 = extractfields(v[i], field.start, field.end);
+      char *extractField2 = extractfields(v[left], field.start, field.end);
+      resultComp = (*comp)(extractField1, extractField2);
+      if (resultComp < 0) {
+        swap(v, ++last, i);
+      }
+      free(extractField1);
+      free(extractField2);
     }
-    free(extractField1);
-    free(extractField2);
   }
 
   swap(v, left, last);
-  quick_sort(v, left, last - 1, comp);
-  quick_sort(v, last + 1, right, comp);
+  quick_sort_field(v, left, last - 1, fields, fieldsCount);
+  quick_sort_field(v, last + 1, right, fields, fieldsCount);
 }
 
 /* numcmp: compare s1 and s2 numerically */
