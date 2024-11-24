@@ -26,8 +26,15 @@ int main() /* convert declaration to words */
       errorToken = 0;
       continue;
     }
-    if (tokentype != '\n')
+    if (tokentype != '\n') {
+      if (tokentype == '(') {
+        printf("missing )\n");
+        while (gettoken() != '\n')
+          ;
+        continue;
+      }
       printf("syntax error\n");
+    }
     printf("%s: %s %s\n", name, out, datatype);
   }
   return 0;
