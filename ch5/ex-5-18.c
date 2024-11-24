@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #define MAXTOKEN 100
-enum { NAME, PARENS, BRACKETS };
+enum { NAME, PARENS, BRACKETS, ERROR_BRACKET };
 void dcl(void);
 void dirdcl(void);
 int gettoken(void);
@@ -11,6 +11,7 @@ char token[MAXTOKEN];    /* last token string */
 char name[MAXTOKEN];     /* identifier name */
 char datatype[MAXTOKEN]; /* data type = char, int, etc. */
 char out[1000];
+int errorToken = 0;
 int main() /* convert declaration to words */
 {
   while (gettoken() != EOF) { /* 1st token on line */
@@ -18,6 +19,13 @@ int main() /* convert declaration to words */
     strcpy(datatype, token); /* is the datatype */
     out[0] = '\0';
     dcl(); /* parse rest of line */
+    if (errorToken == ERROR_BRACKET) {
+      printf("missing ]\n");
+      while (gettoken() != '\n')
+        ;
+      errorToken = 0;
+      continue;
+    }
     if (tokentype != '\n')
       printf("syntax error\n");
     printf("%s: %s %s\n", name, out, datatype);
@@ -37,9 +45,13 @@ void dcl(void) {
 
 /* dirdcl: parse a direct declarator */
 void dirdcl(void) {
+  if (errorToken != 0)
+    return;
   int type;
   if (tokentype == '(') { /* ( dcl ) */
     dcl();
+    if (errorToken != 0)
+      return;
     if (tokentype != ')')
       printf("error: missing )\n");
   } else if (tokentype == NAME) /* variable name */
@@ -88,8 +100,13 @@ int gettoken(void) /* return next token */
       return tokentype;
     }
   } else if (c == '[') {
-    for (*p++ = c; (*p++ = getch()) != ']';)
-      ;
+    for (*p++ = c; (*p++ = getch()) != ']';) {
+      if (*p == '\0') {
+        errorToken = ERROR_BRACKET;
+        return tokentype = ERROR_BRACKET;
+      }
+    };
+
     *p = '\0';
     return tokentype = BRACKETS;
   } else if (isalpha(c)) {
