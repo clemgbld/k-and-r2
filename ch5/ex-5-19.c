@@ -1,6 +1,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
+
 #define MAXTOKEN 100
 enum { NAME, PARENS, BRACKETS, ERROR_BRACKET };
 void dcl(void);
@@ -18,17 +19,27 @@ int errorToken = 0;
 int main() {
   int type;
   char temp[MAXTOKEN];
+  int lastPointer = 0;
   while (gettoken() != EOF) {
     strcpy(out, token);
     while ((type = gettoken()) != '\n')
-      if (type == PARENS || type == BRACKETS)
-        strcat(out, token);
-      else if (type == '*') {
-        sprintf(temp, "(*%s)", out);
+      if (type == PARENS || type == BRACKETS) {
+        if (lastPointer) {
+          sprintf(temp, "(%s)", out);
+          strcpy(out, temp);
+          strcat(out, token);
+        } else {
+          strcat(out, token);
+        }
+        lastPointer = 0;
+      } else if (type == '*') {
+        sprintf(temp, "*%s", out);
         strcpy(out, temp);
+        lastPointer = 1;
       } else if (type == NAME) {
         sprintf(temp, "%s %s", token, out);
         strcpy(out, temp);
+        lastPointer = 0;
       } else
         printf("invalid input at %s\n", token);
   }

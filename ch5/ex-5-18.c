@@ -34,6 +34,8 @@ int main() /* convert declaration to words */
         continue;
       }
       printf("syntax error\n");
+      while (gettoken() != '\n')
+        ;
     }
     printf("%s: %s %s\n", name, out, datatype);
   }
