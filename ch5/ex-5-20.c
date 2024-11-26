@@ -87,11 +87,21 @@ void dirdcl(void) {
     else if (type == '(') {
       strcat(out, " function taking ");
       while (tokentype != ')') {
+        int is_constant = 0;
         gettoken();
-        strcpy(fn_datatype, token);
+        if (strcmp(token, "const") == 0) {
+          is_constant = 1;
+          gettoken();
+          strcpy(fn_datatype, token);
+        } else {
+          strcpy(fn_datatype, token);
+        }
         is_function_arg = 1;
         dcl();
         strcat(out, " ");
+        if (is_constant) {
+          strcat(out, "constant ");
+        }
         strcat(out, fn_datatype);
         is_function_arg = 0;
         if (tokentype != ',' && tokentype != ')') {
