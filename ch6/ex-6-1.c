@@ -25,14 +25,28 @@ int getword(char *word, int lim) {
     ;
 
   if (c == '/') {
-    int potentialNextSlash = getch();
-    if (potentialNextSlash == '/') {
+    int next = getch();
+    if (next == '/') {
       while ((c = getch()) != '\n')
         ;
       while (isspace(c = getch()))
         ;
+    } else if (next == '*') {
+      int end;
+      while ((end = getch()) != EOF) {
+        if (end == '*') {
+          int nextEnd = getch();
+          if (nextEnd == '/') {
+            break;
+          } else {
+            ungetch(nextEnd);
+          }
+        }
+      }
+      while (isspace(c = getch()))
+        ;
     } else {
-      ungetch(potentialNextSlash);
+      ungetch(next);
     }
   }
 
