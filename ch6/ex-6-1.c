@@ -23,17 +23,46 @@ int getword(char *word, int lim) {
   char *w = word;
   while (isspace(c = getch()))
     ;
+
+  if (c == '/') {
+    int potentialNextSlash = getch();
+    if (potentialNextSlash == '/') {
+      while ((c = getch()) != '\n')
+        ;
+      while (isspace(c = getch()))
+        ;
+    } else {
+      ungetch(potentialNextSlash);
+    }
+  }
+
   if (c != EOF)
     *w++ = c;
-  if (!isalpha(c)) {
+
+  if (!isalpha(c) && c != '"') {
     *w = '\0';
     return c;
   }
-  for (; --lim > 0; w++)
-    if (!isalnum(*w = getch()) && *w != '_') {
-      ungetch(*w);
-      break;
+
+  int isStringConstant = c == '"';
+
+  if (isStringConstant) {
+    for (; --lim > 0; w++) {
+      *w = getch();
+      if (*w == '"') {
+        w++;
+        break;
+      }
     }
+
+  } else {
+    for (; --lim > 0; w++)
+      if (!isalnum(*w = getch()) && *w != '_') {
+        ungetch(*w);
+        break;
+      }
+  }
+
   *w = '\0';
   return word[0];
 }
