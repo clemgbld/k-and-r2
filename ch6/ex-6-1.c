@@ -40,34 +40,44 @@ int getword(char *word, int lim) {
 
   if (isStringConstant) {
     int prev = *w;
-    for (; --lim > 0;) {
+    for (; --lim > 0; w++) {
       *w = getch();
       if (*w == '"' && prev != '\\') {
         w++;
         break;
       }
       prev = *w;
-      w++;
+    }
+
+  } else if (isPreprocessor) {
+    for (; --lim > 0; w++) {
+      *w = getch();
+      if (*w == '\n') {
+        break;
+      }
     }
 
   } else if (isPotentialComment) {
-    int next = getch();
-    if (next == '/') {
-      *w++ = '/';
-      while ((*w++ = getch()) != '\n')
-        ;
-    } else if (next == '*') {
-      *w++ = '*';
-      int end;
-      while ((end = getch()) != EOF) {
-        *w++ = end;
-        if (end == '*') {
-          int nextEnd = getch();
-          if (nextEnd == '/') {
-            *w++ = nextEnd;
-            break;
-          } else {
-            ungetch(nextEnd);
+    int next;
+    if (--lim > 0) {
+      int next = getch();
+      if (next == '/') {
+        *w++ = '/';
+        for (; --lim > 0 && (*w++ = getch()) != '\n';)
+          ;
+      } else if (next == '*') {
+        *w++ = '*';
+        int end;
+        for (; --lim > 0 && (end = getch()) != EOF;) {
+          *w++ = end;
+          if (end == '*') {
+            int nextEnd = getch();
+            if (nextEnd == '/') {
+              *w++ = nextEnd;
+              break;
+            } else {
+              ungetch(nextEnd);
+            }
           }
         }
       }
