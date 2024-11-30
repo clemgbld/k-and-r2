@@ -24,51 +24,58 @@ int getword(char *word, int lim) {
   while (isspace(c = getch()))
     ;
 
-  if (c == '/') {
-    int next = getch();
-    if (next == '/') {
-      while ((c = getch()) != '\n')
-        ;
-      while (isspace(c = getch()))
-        ;
-    } else if (next == '*') {
-      int end;
-      while ((end = getch()) != EOF) {
-        if (end == '*') {
-          int nextEnd = getch();
-          if (nextEnd == '/') {
-            break;
-          } else {
-            ungetch(nextEnd);
-          }
-        }
-      }
-      while (isspace(c = getch()))
-        ;
-    } else {
-      ungetch(next);
-    }
-  }
-
   if (c != EOF)
     *w++ = c;
 
-  if (!isalpha(c) && c != '"') {
+  if (!isalpha(c) && c != '"' && c != '#' && c != '/') {
     *w = '\0';
     return c;
   }
 
   int isStringConstant = c == '"';
 
+  int isPreprocessor = c == '#';
+
+  int isPotentialComment = c == '/';
+
   if (isStringConstant) {
-    for (; --lim > 0; w++) {
+    int prev = *w;
+    for (; --lim > 0;) {
       *w = getch();
-      if (*w == '"') {
+      if (*w == '"' && prev != '\\') {
         w++;
         break;
       }
+      prev = *w;
+      w++;
     }
 
+  } else if (isPotentialComment) {
+    int next = getch();
+    if (next == '/') {
+      *w++ = '/';
+      while ((*w++ = getch()) != '\n')
+        ;
+    } else if (next == '*') {
+      *w++ = '*';
+      int end;
+      while ((end = getch()) != EOF) {
+        *w++ = end;
+        if (end == '*') {
+          int nextEnd = getch();
+          if (nextEnd == '/') {
+            *w++ = nextEnd;
+            break;
+          } else {
+            ungetch(nextEnd);
+          }
+        }
+      }
+    } else {
+      ungetch(next);
+      *w = '\0';
+      return c;
+    }
   } else {
     for (; --lim > 0; w++)
       if (!isalnum(*w = getch()) && *w != '_') {
