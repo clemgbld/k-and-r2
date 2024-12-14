@@ -1,11 +1,15 @@
 #include "../ch6/take-first.c"
 #include <_ctype.h>
 #include <ctype.h>
+#include <limits.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#define MAX_LONG_DIGITS 10
+#define MAX_DOUBLE_DIGITS 19
 
 void display_padded_str(char *str, bool has_first_int, int first_int) {
   int str_len = strlen(str);
@@ -81,12 +85,14 @@ void minprintf(char *fmt, ...) {
         has_second_int = true;
       } else if (*p == '*') {
         second_int = va_arg(ap, int);
-        second_int = true;
+        has_second_int = true;
         p++;
       }
     }
 
-    char str[sizeof(long)];
+    char str[has_first_int ? MAX_LONG_DIGITS + first_int : MAX_LONG_DIGITS];
+    char str_double[has_first_int ? MAX_DOUBLE_DIGITS + first_int
+                                  : MAX_DOUBLE_DIGITS];
     switch (*p) {
     case 'd':
     case 'i':
@@ -96,16 +102,31 @@ void minprintf(char *fmt, ...) {
       break;
     case 'f':
       dval = va_arg(ap, double);
-      printf("%f", dval);
+      if (has_second_int) {
+        sprintf(str_double, "%.*f", second_int, dval);
+      } else {
+        sprintf(str_double, "%f", dval);
+      }
+      display_padded_str(str_double, has_first_int, first_int);
       break;
     case 'e':
       dval = va_arg(ap, double);
-      printf("%e", dval);
+      if (has_second_int) {
+        sprintf(str_double, "%.*e", second_int, dval);
+      } else {
+        sprintf(str_double, "%e", dval);
+      }
+      display_padded_str(str_double, has_first_int, first_int);
       break;
     case 'G':
     case 'g':
       dval = va_arg(ap, double);
-      printf("%g", dval);
+      if (has_second_int) {
+        sprintf(str_double, "%.*g", second_int, dval);
+      } else {
+        sprintf(str_double, "%g", dval);
+      }
+      display_padded_str(str_double, has_first_int, first_int);
       break;
     case 'c':
       ival = va_arg(ap, int);
@@ -151,5 +172,3 @@ void minprintf(char *fmt, ...) {
   }
   va_end(ap); /* clean up when done */
 }
-
-int main() { minprintf("%x %x %x %x %x\n", 255, 255, 255, 255, 255); }
