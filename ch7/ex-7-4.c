@@ -111,6 +111,14 @@ int minscanf(char *fmt, ...) {
         continue;
       }
 
+      if (*fmt == 'c') {
+        if (!should_skip) {
+          char *char_p = va_arg(ap, char *);
+          *char_p = c;
+        }
+        continue;
+      }
+
     } else {
       while (isspace(c = getch()))
         ;
@@ -127,7 +135,9 @@ int minscanf(char *fmt, ...) {
 
 int main() {
   int num;
-  minscanf("%2d", &num);
-  printf("%d\n", num);
+  int num2;
+  char c;
+  minscanf("%d%c%d", &num, &c, &num2);
+  printf("%d%c%d\n", num, c, num2);
   return 0;
 }
