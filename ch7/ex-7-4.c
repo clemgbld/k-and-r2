@@ -25,12 +25,14 @@ void ungetch(int c) /* push character back on input */
   {                                                                            \
     number = 0;                                                                \
     number = 10 * number + (c - '0');                                          \
-    for (int i = 1; isnumber(c = getch()); i++) {                              \
-      if (has_width && width == i) {                                           \
+    width--;                                                                   \
+    for (; isnumber(c = getch());) {                                           \
+      if (width == 0) {                                                        \
         ungetch(c);                                                            \
         break;                                                                 \
       }                                                                        \
       number = 10 * number + (c - '0');                                        \
+      width--;                                                                 \
     }                                                                          \
   }
 
@@ -54,6 +56,7 @@ int minscanf(char *fmt, ...) {
       int should_skip = 0;
       int has_l_modifier = 0;
       int has_h_modifier = 0;
+      int is_negative = 0;
 
       if (*fmt != 'c') {
         while (isspace(c = getch()))
@@ -82,6 +85,12 @@ int minscanf(char *fmt, ...) {
       }
 
       if (*fmt == 'd' || *fmt == 'i') {
+
+        if (c == '-') {
+          is_negative = 1;
+          c = getch();
+        }
+
         if (!isnumber(c)) {
           break;
         }
@@ -90,21 +99,21 @@ int minscanf(char *fmt, ...) {
           parse_number(c, sval, has_width, width);
           if (!should_skip) {
             short *short_p = va_arg(ap, short *);
-            *short_p = sval;
+            *short_p = is_negative ? sval * -1 : sval;
           }
         } else if (has_l_modifier) {
           long lval;
           parse_number(c, lval, has_width, width);
           if (!should_skip) {
             long *long_p = va_arg(ap, long *);
-            *long_p = lval;
+            *long_p = is_negative ? lval * -1 : lval;
           }
         } else {
           int ival;
           parse_number(c, ival, has_width, width);
           if (!should_skip) {
             int *int_p = va_arg(ap, int *);
-            *int_p = ival;
+            *int_p = is_negative ? ival * -1 : ival;
           }
         }
         ungetch(c);
@@ -116,6 +125,20 @@ int minscanf(char *fmt, ...) {
           char *char_p = va_arg(ap, char *);
           *char_p = c;
         }
+        continue;
+      }
+
+      if (*fmt == 's') {
+        char *char_p = va_arg(ap, char *);
+        *char_p++ = c;
+        for (int i = 0; !isspace(c = getchar()); i++) {
+          if (has_width && width == i) {
+            ungetch(c);
+            break;
+          }
+          *char_p++ = c;
+        }
+        ungetch(c);
         continue;
       }
 
@@ -136,8 +159,8 @@ int minscanf(char *fmt, ...) {
 int main() {
   int num;
   int num2;
-  char c;
-  minscanf("%d%c%d", &num, &c, &num2);
-  printf("%d%c%d\n", num, c, num2);
+  char s[100];
+  minscanf("%d %s %d", &num, &s, &num2);
+  printf("%d %s %d\n", num, s, num2);
   return 0;
 }
