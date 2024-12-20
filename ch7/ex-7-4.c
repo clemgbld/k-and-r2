@@ -3,6 +3,12 @@
 #include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <sys/_types/_va_list.h>
+
+#define MAX_DIGITS_LONG 19
+#define MAX_DIGITS_INT 10
+#define MAX_DIGITS_SHORT 5
 
 #define BUFSIZE 100
 char buf[BUFSIZE]; /* buffer for ungetch */
@@ -84,6 +90,54 @@ void ungetch(int c) /* push character back on input */
     }                                                                          \
   }
 
+#define parse_base_16(c, has_width, width, is_negative, should_skip, ap, max,  \
+                      type)                                                    \
+  {                                                                            \
+    char str[max];                                                             \
+    char *p = str;                                                             \
+    *p++ = c;                                                                  \
+    c = getch();                                                               \
+    for (int i = 1; (isnumber(c) || (c >= 'a' && c <= 'f') ||                  \
+                     (c >= 'A' && c <= 'F') || c == 'x' || c == 'X');          \
+         i++) {                                                                \
+      if (i == max || (has_width && width == i)) {                             \
+        break;                                                                 \
+      }                                                                        \
+      *p++ = c;                                                                \
+      width--;                                                                 \
+      c = getch();                                                             \
+    }                                                                          \
+    type val = strtoll(str, NULL, 16);                                         \
+                                                                               \
+    if (!should_skip) {                                                        \
+      type *num_p = va_arg(ap, type *);                                        \
+      *num_p = is_negative ? val * -1 : val;                                   \
+    }                                                                          \
+  }
+
+#define parse_base_8(c, has_width, width, is_negative, should_skip, ap, max,   \
+                     type)                                                     \
+  {                                                                            \
+    char str[max];                                                             \
+    char *p = str;                                                             \
+    *p = c;                                                                    \
+                                                                               \
+    for (int i = 1; isnumber(c = getch()); i++) {                              \
+      if (i == max || (has_width && width == i)) {                             \
+        break;                                                                 \
+      }                                                                        \
+      *p++ = c;                                                                \
+      width--;                                                                 \
+    }                                                                          \
+                                                                               \
+    type val = strtoll(str, NULL, 8);                                          \
+                                                                               \
+    if (!should_skip) {                                                        \
+      type *num_p = va_arg(ap, type *);                                        \
+      *num_p = is_negative ? val * -1 : val;                                   \
+    }                                                                          \
+  }
+
 int minscanf(char *fmt, ...) {
   va_list ap;        /* points to each unnamed arg in turn */
   va_start(ap, fmt); /* make ap point to 1st unnamed arg */
@@ -136,7 +190,8 @@ int minscanf(char *fmt, ...) {
         has_L_modifier = 1;
       }
 
-      if (*fmt == 'd' || *fmt == 'i') {
+      if (*fmt == 'd' || *fmt == 'i' || *fmt == 'u' || *fmt == 'x' ||
+          *fmt == 'o') {
 
         if (c == '-') {
           is_negative = 1;
@@ -146,7 +201,57 @@ int minscanf(char *fmt, ...) {
         if (!isnumber(c)) {
           break;
         }
-        if (has_h_modifier) {
+
+        if (*fmt == 'x') {
+          if (has_h_modifier) {
+            parse_base_16(c, has_width, width, is_negative, should_skip, ap,
+                          MAX_DIGITS_SHORT, short);
+          } else if (has_l_modifier) {
+            parse_base_16(c, has_width, width, is_negative, should_skip, ap,
+                          MAX_DIGITS_LONG, long);
+
+          } else {
+            parse_base_16(c, has_width, width, is_negative, should_skip, ap,
+                          MAX_DIGITS_INT, int);
+          }
+        } else if (*fmt == 'o') {
+          if (has_h_modifier) {
+            parse_base_8(c, has_width, width, is_negative, should_skip, ap,
+                         MAX_DIGITS_SHORT, short);
+          } else if (has_l_modifier) {
+            parse_base_8(c, has_width, width, is_negative, should_skip, ap,
+                         MAX_DIGITS_LONG, long);
+
+          } else {
+            parse_base_8(c, has_width, width, is_negative, should_skip, ap,
+                         MAX_DIGITS_INT, int);
+          }
+
+        } else if (*fmt == 'u') {
+          if (has_h_modifier) {
+            short unsigned sval;
+            parse_number(c, sval, has_width, width);
+            if (!should_skip) {
+              short unsigned *short_p = va_arg(ap, short unsigned *);
+              *short_p = sval;
+            }
+          } else if (has_l_modifier) {
+            long unsigned lval;
+            parse_number(c, lval, has_width, width);
+            if (!should_skip) {
+              long unsigned *long_p = va_arg(ap, long unsigned *);
+              *long_p = lval;
+            }
+          } else {
+            unsigned ival;
+            parse_number(c, ival, has_width, width);
+            if (!should_skip) {
+              unsigned *int_p = va_arg(ap, unsigned *);
+              *int_p = ival;
+            }
+          }
+
+        } else if (has_h_modifier) {
           short sval;
           parse_number(c, sval, has_width, width);
           if (!should_skip) {
@@ -254,11 +359,4 @@ int minscanf(char *fmt, ...) {
 
   va_end(ap); /* clean up when done */
   return n;
-}
-
-int main() {
-  double dval;
-  minscanf("%lf", &dval);
-  printf("%f\n", dval);
-  return 0;
 }
