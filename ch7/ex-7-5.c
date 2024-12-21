@@ -11,10 +11,7 @@ double pop(void);
 int isempty(void);
 
 int main() {
-
-  int n;
   int c;
-
   while ((c = getchar()) != EOF) {
     if (c == '\n') {
       printf("\t%.8g\n", pop());
@@ -23,7 +20,7 @@ int main() {
     }
 
     double num;
-    n = scanf("%lf", &num);
+    int n = scanf("%lf", &num);
 
     if (n == 1) {
       push(num);
