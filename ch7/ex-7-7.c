@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
   }
 
   if (argc < 1) {
-    printf("Usage: find -x  -n ...pattern optional-files-name\n");
+    printf("Usage: find -x  -n pattern [file1] [file2]... \n");
     return 1;
   }
   if (argc == 1) {
@@ -74,6 +74,8 @@ int main(int argc, char *argv[]) {
           found++;
         }
       }
+      if (ferror(fp))
+        fprintf(stderr, "%s: file error\n", filename);
       fclose(fp);
       lineno = 0;
     }
