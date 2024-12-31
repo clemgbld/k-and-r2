@@ -62,8 +62,6 @@ FILE *_fopen(char *name, char *mode) {
   return fp;
 }
 
-int _fclose(FILE *fp) { return 0; }
-
 /* _fillbuf: allocate and fill input buffer */
 int _fillbuf(FILE *fp) {
   int bufsize;
@@ -101,17 +99,53 @@ int _flushbuf(int c, FILE *fp) {
   }
   fp->ptr = fp->base;
   int n = write(fp->fd, fp->ptr, bufsize);
-  if (n == 0) {
-    fp->flag |= _EOF;
-    return EOF;
-  } else if (n == -1) {
+  if (n != bufsize) {
     fp->flag |= _ERR;
     return EOF;
   }
-  fp->cnt = bufsize - 1;
+  fp->cnt = bufsize;
   *fp->ptr = c;
   return (unsigned char)*fp->ptr++;
 };
+
+int _fflush(FILE *fp) {
+  int bufsize;
+  if ((fp->flag & (_WRITE | _EOF | _ERR)) != _WRITE)
+    return EOF;
+  if (fp->base == NULL)
+    return EOF;
+  bufsize = (fp->flag & _UNBUF) ? 1 : BUFSIZ;
+  int current_content_size = bufsize - fp->cnt;
+  if (current_content_size == 0)
+    return 0;
+  char buff[current_content_size];
+  fp->ptr = fp->base;
+  for (int i = 0; i < current_content_size; i++) {
+    buff[i] = *fp->ptr++;
+  }
+  int n = write(fp->fd, buff, current_content_size);
+  if (n != bufsize) {
+    fp->flag |= _ERR;
+    return EOF;
+  }
+  fp->ptr = fp->base;
+  fp->cnt = bufsize;
+  return 0;
+}
+
+int _fclose(FILE *fp) {
+  int n;
+  n = _fflush(fp);
+  if (n != 0)
+    return EOF;
+  free(fp->base);
+  fp->ptr = NULL;
+  fp->flag = 0;
+  n = close(fp->fd);
+  if (n != 0)
+    return EOF;
+  return n;
+}
 
 FILE _iob[OPEN_MAX] = {/* stdin, stdout, stderr */
                        {0, (char *)0, (char *)0, _READ, 0},
