@@ -147,6 +147,25 @@ int _fclose(FILE *fp) {
   return n;
 }
 
+int _fseek(FILE *fp, long offset, int origin) {
+  if ((fp->flag & _WRITE) == _WRITE) {
+    int status = _fflush(fp);
+    if (status != 0) {
+      return EOF;
+    }
+  }
+
+  if ((fp->flag & _READ) == _READ) {
+    fp->ptr = fp->base;
+    fp->cnt = 0;
+  }
+
+  if (lseek(fp->fd, offset, origin) >= 0) {
+    return 0;
+  }
+  return EOF;
+}
+
 FILE _iob[OPEN_MAX] = {/* stdin, stdout, stderr */
                        {0, (char *)0, (char *)0, _READ, 0},
                        {0, (char *)0, (char *)0, _WRITE, 1},
