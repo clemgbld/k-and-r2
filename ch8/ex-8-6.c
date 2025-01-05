@@ -17,21 +17,7 @@ static Header *freep = NULL; /* start of free list */
 
 void Free(void *);
 void *Malloc(unsigned);
-
-int main() {
-  char *p = (char *)Malloc(sizeof(char) * 6);
-  char *begin = p;
-  *p++ = 'h';
-  *p++ = 'e';
-  *p++ = 'l';
-  *p++ = 'l';
-  *p++ = 'o';
-  *p++ = '\0';
-  printf("%s", begin);
-  Free(begin);
-
-  return 0;
-}
+void *Calloc(unsigned, unsigned);
 
 static Header *Morecore(unsigned);
 
@@ -63,6 +49,17 @@ void *Malloc(unsigned nbytes) {
       if ((p = Morecore(nunits)) == NULL)
         return NULL; /* none left */
   }
+}
+
+void *Calloc(unsigned nitems, unsigned nbytes) {
+  short *p = (short *)Malloc(nbytes * nitems);
+  if (p == NULL)
+    return NULL;
+  void *begin = p;
+  for (int i = 0; i < nitems; i++) {
+    *p++ = 0;
+  }
+  return begin;
 }
 
 #define NALLOC 1024 /* minimum units to request */
