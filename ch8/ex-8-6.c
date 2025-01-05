@@ -1,4 +1,4 @@
-#include <stdio.h>
+#define NULL 0
 
 typedef long Align; /* for alignment to long boundary */
 
