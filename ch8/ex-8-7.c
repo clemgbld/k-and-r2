@@ -1,4 +1,7 @@
-#define NULL 0
+#include <limits.h>
+#include <stdio.h>
+
+#define NALLOC 1024 /* minimum units to request */
 
 typedef long Align; /* for alignment to long boundary */
 
@@ -28,7 +31,13 @@ void *Malloc(unsigned nbytes) {
   Header *Morecore(unsigned);
   unsigned nunits;
 
+  if (nbytes == 0 || nbytes >= UINT_MAX - NALLOC) {
+    fprintf(stderr, "malloc: invalid size %u\n", nbytes);
+    return NULL;
+  }
+
   nunits = (nbytes + sizeof(Header) - 1) / sizeof(Header) + 1;
+
   if ((prevp = freep) == NULL) { /* no free list yet */
     base.s.ptr = freep = prevp = &base;
     base.s.size = 0;
@@ -62,8 +71,6 @@ void *Calloc(unsigned nitems, unsigned nbytes) {
   return begin;
 }
 
-#define NALLOC 1024 /* minimum units to request */
-
 /* Morecore: ask system for more memory */
 static Header *Morecore(unsigned nu) {
 
@@ -83,8 +90,15 @@ static Header *Morecore(unsigned nu) {
 
 /* free: put block ap in free list */
 void Free(void *ap) {
+  if (ap == NULL) {
+    return;
+  }
   Header *bp, *p;
   bp = (Header *)ap - 1; /* point to block header */
+  if (bp->s.size == 0 || bp->s.size == UINT_MAX - NALLOC) {
+    fprintf(stderr, "free: invalid block size %u\n", bp->s.size);
+    return;
+  }
   for (p = freep; !(bp > p && bp < p->s.ptr); p = p->s.ptr)
     break; /* freed block at start or end of arena */
 
